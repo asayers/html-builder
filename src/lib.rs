@@ -79,6 +79,12 @@ pub struct Node<'a> {
     _phantom: std::marker::PhantomData<&'a ()>,
 }
 
+#[derive(Clone)]
+pub struct Void<'a> {
+    ctx: Weak<Mutex<Ctx>>,
+    _phantom: std::marker::PhantomData<&'a ()>,
+}
+
 #[derive(Default)]
 struct Ctx {
     wtr: String,
@@ -156,6 +162,22 @@ impl<'a> Node<'a> {
         }
     }
 
+    pub fn void_child<'b>(&'b mut self, tag: Cow<'static, str>) -> Void<'b> {
+        let ctx = self.ctx.upgrade().unwrap();
+        let mut ctx = ctx.lock().unwrap();
+        ctx.close_unclosed();
+        let to_pop = ctx.stack.len() - self.depth;
+        for _ in 0..to_pop {
+            ctx.pop();
+        }
+        write!(ctx.wtr, "{:>w$}{}", "<", tag, w = self.depth + 1).unwrap();
+        ctx.tag_open = true;
+        Void {
+            ctx: self.ctx.clone(),
+            _phantom: std::marker::PhantomData,
+        }
+    }
+
     pub fn attr(&mut self, attr: &str) {
         let ctx = self.ctx.upgrade().unwrap();
         let mut ctx = ctx.lock().unwrap();
@@ -166,6 +188,37 @@ impl<'a> Node<'a> {
 }
 
 impl<'a> Write for Node<'a> {
+    fn write_char(&mut self, c: char) -> std::fmt::Result {
+        let mutex = self.ctx.upgrade().unwrap();
+        let mut ctx = mutex.lock().unwrap();
+        ctx.close_unclosed();
+        ctx.wtr.write_char(c)
+    }
+    fn write_fmt(&mut self, args: std::fmt::Arguments<'_>) -> std::fmt::Result {
+        let mutex = self.ctx.upgrade().unwrap();
+        let mut ctx = mutex.lock().unwrap();
+        ctx.close_unclosed();
+        ctx.wtr.write_fmt(args)
+    }
+    fn write_str(&mut self, s: &str) -> std::fmt::Result {
+        let mutex = self.ctx.upgrade().unwrap();
+        let mut ctx = mutex.lock().unwrap();
+        ctx.close_unclosed();
+        ctx.wtr.write_str(s)
+    }
+}
+
+impl<'a> Void<'a> {
+    pub fn attr(&mut self, attr: &str) {
+        let ctx = self.ctx.upgrade().unwrap();
+        let mut ctx = ctx.lock().unwrap();
+        if ctx.tag_open {
+            write!(ctx.wtr, " {}", attr).unwrap();
+        }
+    }
+}
+
+impl<'a> Write for Void<'a> {
     fn write_char(&mut self, c: char) -> std::fmt::Result {
         let mutex = self.ctx.upgrade().unwrap();
         let mut ctx = mutex.lock().unwrap();

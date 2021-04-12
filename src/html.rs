@@ -1,4 +1,4 @@
-use crate::Node;
+use crate::{Node, Void};
 use std::borrow::Cow;
 use std::fmt::Write;
 
@@ -16,7 +16,7 @@ pub trait Html5 {
     fn address(&mut self) -> Node;
 
     /// Defines an area inside an image map
-    fn area(&mut self) -> Node;
+    fn area(&mut self) -> Void;
 
     /// Defines an article
     fn article(&mut self) -> Node;
@@ -31,7 +31,7 @@ pub trait Html5 {
     fn b(&mut self) -> Node;
 
     /// Specifies the base URL/target for all relative URLs in a document
-    fn base(&mut self) -> Node;
+    fn base(&mut self) -> Void;
 
     /// Isolates a part of text that might be formatted in a different direction from other text outside it
     fn bdi(&mut self) -> Node;
@@ -46,7 +46,7 @@ pub trait Html5 {
     fn body(&mut self) -> Node;
 
     /// Defines a single line break
-    fn br(&mut self) -> Node;
+    fn br(&mut self) -> Void;
 
     /// Defines a clickable button
     fn button(&mut self) -> Node;
@@ -64,7 +64,7 @@ pub trait Html5 {
     fn code(&mut self) -> Node;
 
     /// Specifies column properties for each column within a <colgroup> element
-    fn col(&mut self) -> Node;
+    fn col(&mut self) -> Void;
 
     /// Specifies a group of one or more columns in a table for formatting
     fn colgroup(&mut self) -> Node;
@@ -103,7 +103,7 @@ pub trait Html5 {
     fn em(&mut self) -> Node;
 
     /// Defines a container for an external application
-    fn embed(&mut self) -> Node;
+    fn embed(&mut self) -> Void;
 
     /// Groups related elements in a form
     fn fieldset(&mut self) -> Node;
@@ -145,7 +145,7 @@ pub trait Html5 {
     fn header(&mut self) -> Node;
 
     /// Defines a thematic change in the content
-    fn hr(&mut self) -> Node;
+    fn hr(&mut self) -> Void;
 
     /// Defines the root of an HTML document
     fn html(&mut self) -> Node;
@@ -157,10 +157,10 @@ pub trait Html5 {
     fn iframe(&mut self) -> Node;
 
     /// Defines an image
-    fn img(&mut self) -> Node;
+    fn img(&mut self) -> Void;
 
     /// Defines an input control
-    fn input(&mut self) -> Node;
+    fn input(&mut self) -> Void;
 
     /// Defines a text that has been inserted into a document
     fn ins(&mut self) -> Node;
@@ -178,7 +178,7 @@ pub trait Html5 {
     fn li(&mut self) -> Node;
 
     /// Defines the relationship between a document and an external resource (most used to link to style sheets)
-    fn link(&mut self) -> Node;
+    fn link(&mut self) -> Void;
 
     /// Specifies the main content of a document
     fn main(&mut self) -> Node;
@@ -190,7 +190,7 @@ pub trait Html5 {
     fn mark(&mut self) -> Node;
 
     /// Defines metadata about an HTML document
-    fn meta(&mut self) -> Node;
+    fn meta(&mut self) -> Void;
 
     /// Defines a scalar measurement within a known range (a gauge)
     fn meter(&mut self) -> Node;
@@ -220,7 +220,7 @@ pub trait Html5 {
     fn p(&mut self) -> Node;
 
     /// Defines a parameter for an object
-    fn param(&mut self) -> Node;
+    fn param(&mut self) -> Void;
 
     /// Defines a container for multiple image resources
     fn picture(&mut self) -> Node;
@@ -262,7 +262,7 @@ pub trait Html5 {
     fn small(&mut self) -> Node;
 
     /// Defines multiple media resources for media elements (`<video>` and `<audio>`)
-    fn source(&mut self) -> Node;
+    fn source(&mut self) -> Void;
 
     /// Defines a section in a document
     fn span(&mut self) -> Node;
@@ -319,7 +319,7 @@ pub trait Html5 {
     fn tr(&mut self) -> Node;
 
     /// Defines text tracks for media elements (`<video>` and `<audio>`)
-    fn track(&mut self) -> Node;
+    fn track(&mut self) -> Void;
 
     /// Defines some text that is unarticulated and styled differently from normal text
     fn u(&mut self) -> Node;
@@ -334,7 +334,7 @@ pub trait Html5 {
     fn video(&mut self) -> Node;
 
     /// Defines a possible line-break
-    fn wbr(&mut self) -> Node;
+    fn wbr(&mut self) -> Void;
 }
 
 impl<'a> Html5 for Node<'a> {
@@ -359,8 +359,8 @@ impl<'a> Html5 for Node<'a> {
     }
 
     /// Defines an area inside an image map
-    fn area<'b>(&'b mut self) -> Node<'b> {
-        self.child(Cow::Borrowed("area"))
+    fn area<'b>(&'b mut self) -> Void<'b> {
+        self.void_child(Cow::Borrowed("area"))
     }
 
     /// Defines an article
@@ -384,8 +384,8 @@ impl<'a> Html5 for Node<'a> {
     }
 
     /// Specifies the base URL/target for all relative URLs in a document
-    fn base<'b>(&'b mut self) -> Node<'b> {
-        self.child(Cow::Borrowed("base"))
+    fn base<'b>(&'b mut self) -> Void<'b> {
+        self.void_child(Cow::Borrowed("base"))
     }
 
     /// Isolates a part of text that might be formatted in a different direction from other text outside it
@@ -409,8 +409,8 @@ impl<'a> Html5 for Node<'a> {
     }
 
     /// Defines a single line break
-    fn br<'b>(&'b mut self) -> Node<'b> {
-        self.child(Cow::Borrowed("br"))
+    fn br<'b>(&'b mut self) -> Void<'b> {
+        self.void_child(Cow::Borrowed("br"))
     }
 
     /// Defines a clickable button
@@ -439,8 +439,8 @@ impl<'a> Html5 for Node<'a> {
     }
 
     /// Specifies column properties for each column within a <colgroup> element
-    fn col<'b>(&'b mut self) -> Node<'b> {
-        self.child(Cow::Borrowed("col"))
+    fn col<'b>(&'b mut self) -> Void<'b> {
+        self.void_child(Cow::Borrowed("col"))
     }
 
     /// Specifies a group of one or more columns in a table for formatting
@@ -504,8 +504,8 @@ impl<'a> Html5 for Node<'a> {
     }
 
     /// Defines a container for an external application
-    fn embed<'b>(&'b mut self) -> Node<'b> {
-        self.child(Cow::Borrowed("embed"))
+    fn embed<'b>(&'b mut self) -> Void<'b> {
+        self.void_child(Cow::Borrowed("embed"))
     }
 
     /// Groups related elements in a form
@@ -574,8 +574,8 @@ impl<'a> Html5 for Node<'a> {
     }
 
     /// Defines a thematic change in the content
-    fn hr<'b>(&'b mut self) -> Node<'b> {
-        self.child(Cow::Borrowed("hr"))
+    fn hr<'b>(&'b mut self) -> Void<'b> {
+        self.void_child(Cow::Borrowed("hr"))
     }
 
     /// Defines the root of an HTML document
@@ -594,13 +594,13 @@ impl<'a> Html5 for Node<'a> {
     }
 
     /// Defines an image
-    fn img<'b>(&'b mut self) -> Node<'b> {
-        self.child(Cow::Borrowed("img"))
+    fn img<'b>(&'b mut self) -> Void<'b> {
+        self.void_child(Cow::Borrowed("img"))
     }
 
     /// Defines an input control
-    fn input<'b>(&'b mut self) -> Node<'b> {
-        self.child(Cow::Borrowed("input"))
+    fn input<'b>(&'b mut self) -> Void<'b> {
+        self.void_child(Cow::Borrowed("input"))
     }
 
     /// Defines a text that has been inserted into a document
@@ -629,8 +629,8 @@ impl<'a> Html5 for Node<'a> {
     }
 
     /// Defines the relationship between a document and an external resource (most used to link to style sheets)
-    fn link<'b>(&'b mut self) -> Node<'b> {
-        self.child(Cow::Borrowed("link"))
+    fn link<'b>(&'b mut self) -> Void<'b> {
+        self.void_child(Cow::Borrowed("link"))
     }
 
     /// Specifies the main content of a document
@@ -649,8 +649,8 @@ impl<'a> Html5 for Node<'a> {
     }
 
     /// Defines metadata about an HTML document
-    fn meta<'b>(&'b mut self) -> Node<'b> {
-        self.child(Cow::Borrowed("meta"))
+    fn meta<'b>(&'b mut self) -> Void<'b> {
+        self.void_child(Cow::Borrowed("meta"))
     }
 
     /// Defines a scalar measurement within a known range (a gauge)
@@ -699,8 +699,8 @@ impl<'a> Html5 for Node<'a> {
     }
 
     /// Defines a parameter for an object
-    fn param<'b>(&'b mut self) -> Node<'b> {
-        self.child(Cow::Borrowed("param"))
+    fn param<'b>(&'b mut self) -> Void<'b> {
+        self.void_child(Cow::Borrowed("param"))
     }
 
     /// Defines a container for multiple image resources
@@ -769,8 +769,8 @@ impl<'a> Html5 for Node<'a> {
     }
 
     /// Defines multiple media resources for media elements (<video> and <audio>)
-    fn source<'b>(&'b mut self) -> Node<'b> {
-        self.child(Cow::Borrowed("source"))
+    fn source<'b>(&'b mut self) -> Void<'b> {
+        self.void_child(Cow::Borrowed("source"))
     }
 
     /// Defines a section in a document
@@ -864,8 +864,8 @@ impl<'a> Html5 for Node<'a> {
     }
 
     /// Defines text tracks for media elements (<video> and <audio>)
-    fn track<'b>(&'b mut self) -> Node<'b> {
-        self.child(Cow::Borrowed("track"))
+    fn track<'b>(&'b mut self) -> Void<'b> {
+        self.void_child(Cow::Borrowed("track"))
     }
 
     /// Defines some text that is unarticulated and styled differently from normal text
@@ -889,7 +889,7 @@ impl<'a> Html5 for Node<'a> {
     }
 
     /// Defines a possible line-break
-    fn wbr<'b>(&'b mut self) -> Node<'b> {
-        self.child(Cow::Borrowed("wbr"))
+    fn wbr<'b>(&'b mut self) -> Void<'b> {
+        self.void_child(Cow::Borrowed("wbr"))
     }
 }
