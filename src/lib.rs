@@ -8,40 +8,53 @@ it guarantees a well-formed tree.  It doesn't do any fancy stuff like
 valid HTML.  IMO it strikes a good balance of safely to simplicity/flexibility.
 
 ```
+# use pretty_assertions::assert_eq;
 use html_builder::*;
 use std::fmt::Write;
 
 let mut root = Root::new();
 root.doctype();
 let mut html = root.html();
-write!(html.head().title(), "Website!").unwrap();
+html.attr("lang='en'");
+writeln!(html.head().title(), "Website!").unwrap();
 let mut body = html.body();
-write!(body.h1(), "It's a website!").unwrap();
+writeln!(body.h1(), "It's a website!").unwrap();
 let mut list = body.ul();
-for i in 0..5 {
+for i in 0..2 {
     let mut li = list.li();
     let mut a = li.a();
     a.attr(&format!("href='/page_{}.html'", i));
-    write!(a, "Page {}", i).unwrap()
+    writeln!(a, "Page {}", i).unwrap()
 }
 
-let expected = r#"
-<!DOCTYPE>
-<html>
-<head><title>Website!</title></head>
-<body>
-<h1>It's a website!</h1>
-<ul>
-<li><a href='/page_0.html'>Page 0</a></li>
-<li><a href='/page_1.html'>Page 1</a></li>
-<li><a href='/page_2.html'>Page 2</a></li>
-<li><a href='/page_3.html'>Page 3</a></li>
-<li><a href='/page_4.html'>Page 4</a></li>
-</ul>
-</body>
+assert_eq!(
+    root.build(),
+    r#"<!DOCTYPE>
+<html lang='en'>
+ <head>
+  <title>
+Website!
+  </title>
+ </head>
+ <body>
+  <h1>
+It's a website!
+  </h1>
+  <ul>
+   <li>
+    <a href='/page_0.html'>
+Page 0
+    </a>
+   </li>
+   <li>
+    <a href='/page_1.html'>
+Page 1
+    </a>
+   </li>
+  </ul>
+ </body>
 </html>
-"#;
-assert_eq!(root.build(), expected.lines().collect::<Vec<_>>().join(""));
+"#);
 ```
 
 */
@@ -88,8 +101,8 @@ impl Root {
         let mutex = Arc::try_unwrap(self.ctx).ok().unwrap();
         let mut ctx = mutex.into_inner().unwrap();
         ctx.close_unclosed();
-        while let Some(tag) = ctx.stack.pop() {
-            write!(ctx.wtr, "</{}>", tag).unwrap();
+        while !ctx.stack.is_empty() {
+            ctx.pop();
         }
         ctx.wtr
     }
@@ -112,7 +125,14 @@ impl Ctx {
     fn close_unclosed(&mut self) {
         if self.tag_open {
             self.tag_open = false;
-            self.wtr.write_str(">").unwrap();
+            self.wtr.write_str(">\n").unwrap();
+        }
+    }
+
+    fn pop(&mut self) {
+        let depth = self.stack.len();
+        if let Some(tag) = self.stack.pop() {
+            write!(self.wtr, "{:>w$}/{}>\n", "<", tag, w = depth).unwrap();
         }
     }
 }
@@ -124,11 +144,9 @@ impl<'a> Node<'a> {
         ctx.close_unclosed();
         let to_pop = ctx.stack.len() - self.depth;
         for _ in 0..to_pop {
-            // TODO: More efficient impl?
-            let tag = ctx.stack.pop().unwrap();
-            write!(ctx.wtr, "</{}>", tag).unwrap();
+            ctx.pop();
         }
-        write!(ctx.wtr, "<{}", tag).unwrap();
+        write!(ctx.wtr, "{:>w$}{}", "<", tag, w = self.depth + 1).unwrap();
         ctx.stack.push(tag);
         ctx.tag_open = true;
         Node {
@@ -172,30 +190,37 @@ impl<'a> Write for Node<'a> {
 mod tests {
     use super::*;
 
+    const EXPECTED: &str = "\
+<html>
+ <head>
+  <title>
+Foobar
+  </title>
+ </head>
+ <body>
+Lorem ipsum
+ </body>
+</html>
+";
+
     #[test]
     fn full() {
         let mut root = Root::new();
         let mut html = root.child("html".into());
         let mut head = html.child("head".into());
         let mut title = head.child("title".into());
-        write!(title, "Foobar").unwrap();
+        writeln!(title, "Foobar").unwrap();
         let mut body = html.child("body".into());
-        write!(body, "Lorem ipsum").unwrap();
-        assert_eq!(
-            &root.build(),
-            "<html><head><title>Foobar</title></head><body>Lorem ipsum</body></html>"
-        );
+        writeln!(body, "Lorem ipsum").unwrap();
+        assert_eq!(&root.build(), EXPECTED);
     }
 
     #[test]
     fn elided() {
         let mut root = Root::new();
         let mut html = root.child("html".into());
-        write!(html.child("head".into()).child("title".into()), "Foobar").unwrap();
-        write!(html.child("body".into()), "Lorem ipsum").unwrap();
-        assert_eq!(
-            &root.build(),
-            "<html><head><title>Foobar</title></head><body>Lorem ipsum</body></html>"
-        );
+        writeln!(html.child("head".into()).child("title".into()), "Foobar").unwrap();
+        writeln!(html.child("body".into()), "Lorem ipsum").unwrap();
+        assert_eq!(&root.build(), EXPECTED);
     }
 }
