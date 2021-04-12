@@ -14,7 +14,7 @@ pub struct Root {
 pub struct Node<'a> {
     depth: usize,
     ctx: Weak<Mutex<Ctx>>,
-    _phatom: std::marker::PhantomData<&'a ()>,
+    _phantom: std::marker::PhantomData<&'a ()>,
 }
 
 #[derive(Default)]
@@ -29,7 +29,7 @@ impl Root {
         let node = Node {
             depth: 0,
             ctx: Arc::downgrade(&ctx),
-            _phatom: std::marker::PhantomData,
+            _phantom: std::marker::PhantomData,
         };
         Root { node, ctx }
     }
