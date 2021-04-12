@@ -1,3 +1,6 @@
+mod html;
+
+use std::borrow::Cow;
 use std::fmt::Write;
 use std::sync::{Arc, Mutex, Weak};
 
@@ -17,7 +20,7 @@ pub struct Node<'a> {
 #[derive(Default)]
 struct Ctx {
     wtr: String,
-    stack: Vec<String>,
+    stack: Vec<Cow<'static, str>>,
 }
 
 impl Root {
@@ -56,10 +59,10 @@ impl std::ops::DerefMut for Root {
 
 impl<'a> Node<'a> {
     pub fn tag<'b>(&'b mut self, tag: &str) -> Node<'b> {
-        self.child(&format!("<{}>", tag), format!("</{}>", tag))
+        self.child(&format!("<{}>", tag), format!("</{}>", tag).into())
     }
 
-    pub fn child<'b>(&'b mut self, open: &str, close: String) -> Node<'b> {
+    pub fn child<'b>(&'b mut self, open: &str, close: Cow<'static, str>) -> Node<'b> {
         let ctx = self.ctx.upgrade().unwrap();
         let mut ctx = ctx.lock().unwrap();
         let to_pop = ctx.stack.len() - self.depth;
