@@ -1,4 +1,5 @@
 mod html;
+pub use html::*;
 
 use std::borrow::Cow;
 use std::fmt::Write;
