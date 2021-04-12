@@ -4,13 +4,14 @@ use std::sync::{Arc, Mutex, Weak};
 #[derive(Clone)]
 pub struct Root {
     ctx: Arc<Mutex<Ctx>>,
-    node: Node,
+    node: Node<'static>,
 }
 
 #[derive(Clone)]
-pub struct Node {
+pub struct Node<'a> {
     depth: usize,
     ctx: Weak<Mutex<Ctx>>,
+    _phatom: std::marker::PhantomData<&'a ()>,
 }
 
 #[derive(Default)]
@@ -25,6 +26,7 @@ impl Root {
         let node = Node {
             depth: 0,
             ctx: Arc::downgrade(&ctx),
+            _phatom: std::marker::PhantomData,
         };
         Root { node, ctx }
     }
@@ -40,18 +42,24 @@ impl Root {
 }
 
 impl std::ops::Deref for Root {
-    type Target = Node;
-    fn deref(&self) -> &Node {
+    type Target = Node<'static>;
+    fn deref(&self) -> &Node<'static> {
         &self.node
     }
 }
 
-impl Node {
-    pub fn tag(&self, tag: &str) -> Node {
+impl std::ops::DerefMut for Root {
+    fn deref_mut(&mut self) -> &mut Node<'static> {
+        &mut self.node
+    }
+}
+
+impl<'a> Node<'a> {
+    pub fn tag<'b>(&'b mut self, tag: &str) -> Node<'b> {
         self.child(&format!("<{}>", tag), format!("</{}>", tag))
     }
 
-    pub fn child(&self, open: &str, close: String) -> Node {
+    pub fn child<'b>(&'b mut self, open: &str, close: String) -> Node<'b> {
         let ctx = self.ctx.upgrade().unwrap();
         let mut ctx = ctx.lock().unwrap();
         let to_pop = ctx.stack.len() - self.depth;
@@ -65,11 +73,12 @@ impl Node {
         Node {
             depth: self.depth + 1,
             ctx: self.ctx.clone(),
+            _phatom: std::marker::PhantomData,
         }
     }
 }
 
-impl Write for Node {
+impl<'a> Write for Node<'a> {
     fn write_char(&mut self, c: char) -> std::fmt::Result {
         self.ctx
             .upgrade()
@@ -98,39 +107,10 @@ mod tests {
     use super::*;
 
     #[test]
-    #[ignore]
-    fn bad() {
-        let root = Root::new();
-        let mut a = root.tag("a");
-        root.tag("b");
-        write!(a, "Inner of a").unwrap();
-        assert_eq!(&root.build(), "<a>Inner of a</a><b></b>");
-    }
-
-    #[test]
-    #[should_panic]
-    fn use_after_build() {
-        let root = Root::new();
-        let a = root.tag("a");
-        root.build();
-        a.tag("b");
-    }
-
-    #[test]
-    #[ignore]
-    fn even_worse() {
-        let root = Root::new();
-        let a = root.tag("a");
-        root.tag("b");
-        a.tag("c");
-        assert_eq!(&root.build(), "<a><c></c></a><b></b>");
-    }
-
-    #[test]
     fn full() {
-        let root = Root::new();
-        let html = root.tag("html");
-        let head = html.tag("head");
+        let mut root = Root::new();
+        let mut html = root.tag("html");
+        let mut head = html.tag("head");
         let mut title = head.tag("title");
         write!(title, "Foobar").unwrap();
         let mut body = html.tag("body");
@@ -143,8 +123,8 @@ mod tests {
 
     #[test]
     fn elided() {
-        let root = Root::new();
-        let html = root.tag("html");
+        let mut root = Root::new();
+        let mut html = root.tag("html");
         write!(html.tag("head").tag("title"), "Foobar").unwrap();
         write!(html.tag("body"), "Lorem ipsum").unwrap();
         assert_eq!(
