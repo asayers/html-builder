@@ -21,6 +21,7 @@ pub struct Node<'a> {
 struct Ctx {
     wtr: String,
     stack: Vec<Cow<'static, str>>,
+    tag_open: bool,
 }
 
 impl Root {
@@ -36,11 +37,12 @@ impl Root {
 
     pub fn build(self) -> String {
         let mutex = Arc::try_unwrap(self.ctx).ok().unwrap();
-        let Ctx { mut wtr, mut stack } = mutex.into_inner().unwrap();
-        while let Some(tag) = stack.pop() {
-            wtr.push_str(&tag);
+        let mut ctx = mutex.into_inner().unwrap();
+        ctx.close_unclosed();
+        while let Some(tag) = ctx.stack.pop() {
+            write!(ctx.wtr, "</{}>", tag).unwrap();
         }
-        wtr
+        ctx.wtr
     }
 }
 
@@ -57,51 +59,63 @@ impl std::ops::DerefMut for Root {
     }
 }
 
-impl<'a> Node<'a> {
-    pub fn tag<'b>(&'b mut self, tag: &str) -> Node<'b> {
-        self.child(&format!("<{}>", tag), format!("</{}>", tag).into())
+impl Ctx {
+    fn close_unclosed(&mut self) {
+        if self.tag_open {
+            self.tag_open = false;
+            self.wtr.write_str(">").unwrap();
+        }
     }
+}
 
-    pub fn child<'b>(&'b mut self, open: &str, close: Cow<'static, str>) -> Node<'b> {
+impl<'a> Node<'a> {
+    pub fn child<'b>(&'b mut self, tag: Cow<'static, str>) -> Node<'b> {
         let ctx = self.ctx.upgrade().unwrap();
         let mut ctx = ctx.lock().unwrap();
+        ctx.close_unclosed();
         let to_pop = ctx.stack.len() - self.depth;
         for _ in 0..to_pop {
             // TODO: More efficient impl?
             let tag = ctx.stack.pop().unwrap();
-            ctx.wtr.push_str(&tag);
+            write!(ctx.wtr, "</{}>", tag).unwrap();
         }
-        ctx.wtr.write_str(open).unwrap();
-        ctx.stack.push(close);
+        write!(ctx.wtr, "<{}", tag).unwrap();
+        ctx.stack.push(tag);
+        ctx.tag_open = true;
         Node {
             depth: self.depth + 1,
             ctx: self.ctx.clone(),
-            _phatom: std::marker::PhantomData,
+            _phantom: std::marker::PhantomData,
+        }
+    }
+
+    pub fn attr(&mut self, attr: &str) {
+        let ctx = self.ctx.upgrade().unwrap();
+        let mut ctx = ctx.lock().unwrap();
+        if ctx.tag_open {
+            write!(ctx.wtr, " {}", attr).unwrap();
         }
     }
 }
 
 impl<'a> Write for Node<'a> {
     fn write_char(&mut self, c: char) -> std::fmt::Result {
-        self.ctx
-            .upgrade()
-            .unwrap()
-            .lock()
-            .unwrap()
-            .wtr
-            .write_char(c)
+        let mutex = self.ctx.upgrade().unwrap();
+        let mut ctx = mutex.lock().unwrap();
+        ctx.close_unclosed();
+        ctx.wtr.write_char(c)
     }
     fn write_fmt(&mut self, args: std::fmt::Arguments<'_>) -> std::fmt::Result {
-        self.ctx
-            .upgrade()
-            .unwrap()
-            .lock()
-            .unwrap()
-            .wtr
-            .write_fmt(args)
+        let mutex = self.ctx.upgrade().unwrap();
+        let mut ctx = mutex.lock().unwrap();
+        ctx.close_unclosed();
+        ctx.wtr.write_fmt(args)
     }
     fn write_str(&mut self, s: &str) -> std::fmt::Result {
-        self.ctx.upgrade().unwrap().lock().unwrap().wtr.write_str(s)
+        let mutex = self.ctx.upgrade().unwrap();
+        let mut ctx = mutex.lock().unwrap();
+        ctx.close_unclosed();
+        ctx.wtr.write_str(s)
     }
 }
 
@@ -112,11 +126,11 @@ mod tests {
     #[test]
     fn full() {
         let mut root = Root::new();
-        let mut html = root.tag("html");
-        let mut head = html.tag("head");
-        let mut title = head.tag("title");
+        let mut html = root.child("html".into());
+        let mut head = html.child("head".into());
+        let mut title = head.child("title".into());
         write!(title, "Foobar").unwrap();
-        let mut body = html.tag("body");
+        let mut body = html.child("body".into());
         write!(body, "Lorem ipsum").unwrap();
         assert_eq!(
             &root.build(),
@@ -127,9 +141,9 @@ mod tests {
     #[test]
     fn elided() {
         let mut root = Root::new();
-        let mut html = root.tag("html");
-        write!(html.tag("head").tag("title"), "Foobar").unwrap();
-        write!(html.tag("body"), "Lorem ipsum").unwrap();
+        let mut html = root.child("html".into());
+        write!(html.child("head".into()).child("title".into()), "Foobar").unwrap();
+        write!(html.child("body".into()), "Lorem ipsum").unwrap();
         assert_eq!(
             &root.build(),
             "<html><head><title>Foobar</title></head><body>Lorem ipsum</body></html>"
