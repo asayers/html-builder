@@ -1,3 +1,51 @@
+/*! Auto-closing tags for convenient HTML generation
+
+This crate is a helper for code which generates HTML.  It makes
+the process somewhat more tolerable than writing the tags by hand by
+automatically closing tags for you.  Not only is this more convenient,
+it guarantees a well-formed tree.  It doesn't do any fancy stuff like
+[typed-html](https://docs.rs/typed-html), so it's still up to you to write
+valid HTML.  IMO it strikes a good balance of safely to simplicity/flexibility.
+
+```
+use html_builder::*;
+use std::fmt::Write;
+
+let mut root = Root::new();
+root.doctype();
+let mut html = root.html();
+write!(html.head().title(), "Website!").unwrap();
+let mut body = html.body();
+write!(body.h1(), "It's a website!").unwrap();
+let mut list = body.ul();
+for i in 0..5 {
+    let mut li = list.li();
+    let mut a = li.a();
+    a.attr(&format!("href='/page_{}.html'", i));
+    write!(a, "Page {}", i).unwrap()
+}
+
+let expected = r#"
+<!DOCTYPE>
+<html>
+<head><title>Website!</title></head>
+<body>
+<h1>It's a website!</h1>
+<ul>
+<li><a href='/page_0.html'>Page 0</a></li>
+<li><a href='/page_1.html'>Page 1</a></li>
+<li><a href='/page_2.html'>Page 2</a></li>
+<li><a href='/page_3.html'>Page 3</a></li>
+<li><a href='/page_4.html'>Page 4</a></li>
+</ul>
+</body>
+</html>
+"#;
+assert_eq!(root.build(), expected.lines().collect::<Vec<_>>().join(""));
+```
+
+*/
+
 mod html;
 pub use html::*;
 
