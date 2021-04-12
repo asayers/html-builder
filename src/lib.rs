@@ -66,12 +66,14 @@ use std::borrow::Cow;
 use std::fmt::Write;
 use std::sync::{Arc, Mutex, Weak};
 
+/// An HTML document.
 #[derive(Clone)]
 pub struct Document {
     ctx: Arc<Mutex<Ctx>>,
     node: Node<'static>,
 }
 
+/// An HTML element.
 #[derive(Clone)]
 pub struct Node<'a> {
     depth: usize,
@@ -79,6 +81,10 @@ pub struct Node<'a> {
     _phantom: std::marker::PhantomData<&'a ()>,
 }
 
+/// A self-closing element.
+///
+/// Void elements can't have any contents (since there's no end tag, no
+/// content can be put between the start tag and the end tag).
 #[derive(Clone)]
 pub struct Void<'a> {
     ctx: Weak<Mutex<Ctx>>,

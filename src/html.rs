@@ -2,6 +2,7 @@ use crate::{Node, Void};
 use std::borrow::Cow;
 use std::fmt::Write;
 
+/// Helper methods for generating HTML5 documents.
 pub trait Html5 {
     /// Defines the document type
     fn doctype(&mut self);
