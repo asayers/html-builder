@@ -12,9 +12,9 @@ valid HTML.  IMO it strikes a good balance of safely to simplicity/flexibility.
 use html_builder::*;
 use std::fmt::Write;
 
-let mut root = Root::new();
-root.doctype();
-let mut html = root.html();
+let mut doc = Document::new();
+doc.doctype();
+let mut html = doc.html();
 html.attr("lang='en'");
 writeln!(html.head().title(), "Website!").unwrap();
 let mut body = html.body();
@@ -28,7 +28,7 @@ for i in 0..2 {
 }
 
 assert_eq!(
-    root.build(),
+    doc.build(),
     r#"<!DOCTYPE>
 <html lang='en'>
  <head>
@@ -67,7 +67,7 @@ use std::fmt::Write;
 use std::sync::{Arc, Mutex, Weak};
 
 #[derive(Clone)]
-pub struct Root {
+pub struct Document {
     ctx: Arc<Mutex<Ctx>>,
     node: Node<'static>,
 }
@@ -92,15 +92,15 @@ struct Ctx {
     tag_open: bool,
 }
 
-impl Root {
-    pub fn new() -> Root {
+impl Document {
+    pub fn new() -> Document {
         let ctx = Arc::new(Mutex::new(Ctx::default()));
         let node = Node {
             depth: 0,
             ctx: Arc::downgrade(&ctx),
             _phantom: std::marker::PhantomData,
         };
-        Root { node, ctx }
+        Document { node, ctx }
     }
 
     pub fn build(self) -> String {
@@ -114,14 +114,14 @@ impl Root {
     }
 }
 
-impl std::ops::Deref for Root {
+impl std::ops::Deref for Document {
     type Target = Node<'static>;
     fn deref(&self) -> &Node<'static> {
         &self.node
     }
 }
 
-impl std::ops::DerefMut for Root {
+impl std::ops::DerefMut for Document {
     fn deref_mut(&mut self) -> &mut Node<'static> {
         &mut self.node
     }
@@ -258,7 +258,7 @@ Lorem ipsum
 
     #[test]
     fn full() {
-        let mut root = Root::new();
+        let mut root = Document::new();
         let mut html = root.child("html".into());
         let mut head = html.child("head".into());
         let mut title = head.child("title".into());
@@ -270,7 +270,7 @@ Lorem ipsum
 
     #[test]
     fn elided() {
-        let mut root = Root::new();
+        let mut root = Document::new();
         let mut html = root.child("html".into());
         writeln!(html.child("head".into()).child("title".into()), "Foobar").unwrap();
         writeln!(html.child("body".into()), "Lorem ipsum").unwrap();
