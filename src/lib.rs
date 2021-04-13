@@ -12,11 +12,15 @@ valid HTML.  IMO it strikes a good balance of safely to simplicity/flexibility.
 use html_builder::*;
 use std::fmt::Write;
 
-// Start by creating a Document.  This contains a String that we're going
+// Start by creating a Document.  This contains a buffer that we're going
 // to be writing into.
 let mut doc = Document::new();
 
-// Some methods simply write into the internal buffer
+// The document is writable
+writeln!(doc, "<!-- My website -->")?;
+
+// The Html5 trait provides various helper methods.  For instance, doctype()
+// simply writes the <!DOCTYPE> header
 doc.doctype();
 
 // Most helper methods create child nodes.  You can set a node's attributes
@@ -25,12 +29,13 @@ let mut html = doc.html().attr("lang='en'");
 
 let mut head = html.head();
 
+// Just like Document, nodes are also writable.  Set their contents by
+// writing into them.
+writeln!(head.title(), "Website!")?;
+
 // Meta is a "void element", meaning it doesn't need a closing tag.  This is
 // handled correctly.
 head.meta().attr("charset='utf-8'");
-
-// Nodes implement Write.  Set their contents by writing into them.
-writeln!(head.title(), "Website!")?;
 
 let mut body = html.body();
 writeln!(body.h1(), "It's a website!")?;
@@ -46,6 +51,17 @@ for i in 0..2 {
     )?
 }
 
+// You can write functions which add subtrees to a node
+fn figure_with_caption(parent: &mut Node, src: &str, cap: &str) {
+    let mut fig = parent.figure();
+    fig.img()
+        .attr(&format!("src='{}'", src))
+        .attr(&format!("alt='{}'", cap));
+    writeln!(fig.figcaption(), "{}", cap).unwrap();
+}
+
+figure_with_caption(&mut body, "img.jpg", "Awesome image");
+
 // Text contents in an inner node
 let mut footer = body.footer();
 writeln!(footer, "Last modified")?;
@@ -56,13 +72,14 @@ let page = doc.build();
 
 assert_eq!(
     page,
-    r#"<!DOCTYPE>
+    r#"<!-- My website -->
+<!DOCTYPE>
 <html lang='en'>
  <head>
-  <meta charset='utf-8'>
   <title>
 Website!
   </title>
+  <meta charset='utf-8'>
  </head>
  <body>
   <h1>
@@ -80,6 +97,12 @@ Page 1
     </a>
    </li>
   </ul>
+  <figure>
+   <img src='img.jpg' alt='Awesome image'>
+   <figcaption>
+Awesome image
+   </figcaption>
+  </figure>
   <footer>
 Last modified
    <time>
