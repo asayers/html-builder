@@ -183,20 +183,24 @@ impl Ctx {
             write!(self.wtr, "{:>w$}/{}>\n", "<", tag, w = depth).unwrap();
         }
     }
+
+    fn open(&mut self, tag: &str, depth: usize) {
+        self.close_unclosed();
+        let to_pop = self.stack.len() - depth;
+        for _ in 0..to_pop {
+            self.pop();
+        }
+        write!(self.wtr, "{:>w$}{}", "<", tag, w = depth + 1).unwrap();
+        self.tag_open = true;
+    }
 }
 
 impl<'a> Node<'a> {
     pub fn child<'b>(&'b mut self, tag: Cow<'static, str>) -> Node<'b> {
         let ctx = self.ctx.upgrade().unwrap();
         let mut ctx = ctx.lock().unwrap();
-        ctx.close_unclosed();
-        let to_pop = ctx.stack.len() - self.depth;
-        for _ in 0..to_pop {
-            ctx.pop();
-        }
-        write!(ctx.wtr, "{:>w$}{}", "<", tag, w = self.depth + 1).unwrap();
+        ctx.open(&tag, self.depth);
         ctx.stack.push(tag);
-        ctx.tag_open = true;
         Node {
             depth: self.depth + 1,
             ctx: self.ctx.clone(),
@@ -207,13 +211,7 @@ impl<'a> Node<'a> {
     pub fn void_child<'b>(&'b mut self, tag: Cow<'static, str>) -> Void<'b> {
         let ctx = self.ctx.upgrade().unwrap();
         let mut ctx = ctx.lock().unwrap();
-        ctx.close_unclosed();
-        let to_pop = ctx.stack.len() - self.depth;
-        for _ in 0..to_pop {
-            ctx.pop();
-        }
-        write!(ctx.wtr, "{:>w$}{}", "<", tag, w = self.depth + 1).unwrap();
-        ctx.tag_open = true;
+        ctx.open(&tag, self.depth);
         Void {
             ctx: self.ctx.clone(),
             _phantom: std::marker::PhantomData,
