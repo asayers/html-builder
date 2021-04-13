@@ -19,18 +19,15 @@ let mut doc = Document::new();
 // Some methods simply write into the internal buffer
 doc.doctype();
 
-// Others create child nodes
-let mut html = doc.html();
-
-// You can set a node's attributes like so
-html.attr("lang='en'");
+// Most helper methods create child nodes.  You can set a node's attributes
+// like so
+let mut html = doc.html().attr("lang='en'");
 
 let mut head = html.head();
 
 // Meta is a "void element", meaning it doesn't need a closing tag.  This is
 // handled correctly.
-let mut meta = head.meta();
-meta.attr("charset='utf-8'");
+head.meta().attr("charset='utf-8'");
 
 // Nodes implement Write.  Set their contents by writing into them.
 writeln!(head.title(), "Website!")?;
@@ -41,10 +38,12 @@ writeln!(body.h1(), "It's a website!")?;
 // Generating HTML in a loop
 let mut list = body.ul();
 for i in 0..2 {
-    let mut li = list.li();
-    let mut a = li.a();
-    a.attr(&format!("href='/page_{}.html'", i));
-    writeln!(a, "Page {}", i)?
+    writeln!(
+        list.li().a().attr(
+            &format!("href='/page_{}.html'", i)
+        ),
+        "Page {}", i,
+    )?
 }
 
 // Text contents in an inner node
@@ -218,12 +217,13 @@ impl<'a> Node<'a> {
         }
     }
 
-    pub fn attr(&mut self, attr: &str) {
+    pub fn attr(self, attr: &str) -> Node<'a> {
         let ctx = self.ctx.upgrade().unwrap();
         let mut ctx = ctx.lock().unwrap();
         if ctx.tag_open {
             write!(ctx.wtr, " {}", attr).unwrap();
         }
+        self
     }
 }
 
@@ -249,12 +249,13 @@ impl<'a> Write for Node<'a> {
 }
 
 impl<'a> Void<'a> {
-    pub fn attr(&mut self, attr: &str) {
+    pub fn attr(self, attr: &str) -> Void<'a> {
         let ctx = self.ctx.upgrade().unwrap();
         let mut ctx = ctx.lock().unwrap();
         if ctx.tag_open {
             write!(ctx.wtr, " {}", attr).unwrap();
         }
+        self
     }
 }
 
