@@ -172,10 +172,7 @@ impl Document {
     pub fn build(self) -> String {
         let mutex = Arc::try_unwrap(self.ctx).ok().unwrap();
         let mut ctx = mutex.into_inner().unwrap();
-        ctx.close_unclosed();
-        while !ctx.stack.is_empty() {
-            ctx.pop();
-        }
+        ctx.close_deeper_than(0);
         ctx.wtr
     }
 }
@@ -201,19 +198,18 @@ impl Ctx {
         }
     }
 
-    fn pop(&mut self) {
-        let depth = self.stack.len();
-        if let Some(tag) = self.stack.pop() {
-            write!(self.wtr, "{:>w$}/{}>\n", "<", tag, w = depth).unwrap();
+    fn close_deeper_than(&mut self, depth: usize) {
+        self.close_unclosed();
+        let to_pop = self.stack.len() - depth;
+        for _ in 0..to_pop {
+            if let Some(tag) = self.stack.pop() {
+                write!(self.wtr, "{:>w$}/{}>\n", "<", tag, w = self.stack.len() + 1).unwrap();
+            }
         }
     }
 
     fn open(&mut self, tag: &str, depth: usize) {
-        self.close_unclosed();
-        let to_pop = self.stack.len() - depth;
-        for _ in 0..to_pop {
-            self.pop();
-        }
+        self.close_deeper_than(depth);
         write!(self.wtr, "{:>w$}{}", "<", tag, w = depth + 1).unwrap();
         self.tag_open = true;
     }
@@ -256,19 +252,19 @@ impl<'a> Write for Node<'a> {
     fn write_char(&mut self, c: char) -> std::fmt::Result {
         let mutex = self.ctx.upgrade().unwrap();
         let mut ctx = mutex.lock().unwrap();
-        ctx.close_unclosed();
+        ctx.close_deeper_than(self.depth);
         ctx.wtr.write_char(c)
     }
     fn write_fmt(&mut self, args: std::fmt::Arguments<'_>) -> std::fmt::Result {
         let mutex = self.ctx.upgrade().unwrap();
         let mut ctx = mutex.lock().unwrap();
-        ctx.close_unclosed();
+        ctx.close_deeper_than(self.depth);
         ctx.wtr.write_fmt(args)
     }
     fn write_str(&mut self, s: &str) -> std::fmt::Result {
         let mutex = self.ctx.upgrade().unwrap();
         let mut ctx = mutex.lock().unwrap();
-        ctx.close_unclosed();
+        ctx.close_deeper_than(self.depth);
         ctx.wtr.write_str(s)
     }
 }
