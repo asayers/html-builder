@@ -1,10 +1,12 @@
 [package]
 name = "html-builder"
 description = "Flexible and convenient HTML generation"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Alex Sayers <alex@asayers.com>"]
 edition = "2018"
 license = "Unlicense"
+readme = "README.md"
+repository = "https://github.com/asayers/html-builder"
 
 [[bench]]
 name = 'sample_html'
