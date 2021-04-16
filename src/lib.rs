@@ -308,6 +308,7 @@ impl<'a> Write for Void<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pretty_assertions::assert_eq;
 
     const EXPECTED: &str = "\
 <html>
@@ -341,5 +342,36 @@ Lorem ipsum
         writeln!(html.child("head".into()).child("title".into()), "Foobar").unwrap();
         writeln!(html.child("body".into()), "Lorem ipsum").unwrap();
         assert_eq!(&root.build(), EXPECTED);
+    }
+
+    #[test]
+    fn pre_post_inner() {
+        let mut doc = Document::new();
+        let mut a = doc.child("a".into());
+        writeln!(a, "a pre").unwrap();
+        let mut b = a.child("b".into());
+        writeln!(b, "b pre").unwrap();
+        let mut c = b.child("c".into());
+        writeln!(c, "c pre").unwrap();
+        writeln!(c, "c post").unwrap();
+        writeln!(b, "b post").unwrap();
+        writeln!(a, "a post").unwrap();
+        assert_eq!(
+            doc.build(),
+            "\
+<a>
+a pre
+ <b>
+b pre
+  <c>
+c pre
+c post
+  </c>
+b post
+ </b>
+a post
+</a>
+"
+        );
     }
 }
