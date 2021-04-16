@@ -1,5 +1,6 @@
 [package]
 name = "html-builder"
+description = "Flexible and convenient HTML generation"
 version = "0.1.0"
 authors = ["Alex Sayers <alex@asayers.com>"]
 edition = "2018"

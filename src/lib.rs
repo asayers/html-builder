@@ -1,13 +1,34 @@
-/*! Auto-closing tags for convenient HTML generation
+/*!
 
-This crate is a helper for code which generates HTML.  It makes
-the process somewhat more tolerable than writing the tags by hand by
-automatically closing tags for you.  Not only is this more convenient,
-it guarantees a well-formed tree.  It doesn't do any fancy stuff like
-[typed-html](https://docs.rs/typed-html), so it's still up to you to write
-valid HTML.  IMO it strikes a good balance of safely to simplicity/flexibility.
+Short example:
 
-On my laptop the example below runs in 4us, which is fast enough for me.
+```
+# use pretty_assertions::assert_eq;
+use html_builder::*;
+use std::fmt::Write;
+
+let mut doc = Document::new();                // Contents added to buffer by each statement:
+let mut html = doc.html().attr("lang='en'");  // <html lang='en'>
+writeln!(html.head().title(), "Title!")?;     // <head><title>Title!
+writeln!(html.body().h1(), "Header!")?;       // </title></head><body><h1>Header!
+let page = doc.build();                       // </h1></body></html>
+# assert_eq!(page, r#"<html lang='en'>
+#  <head>
+#   <title>
+# Title!
+#   </title>
+#  </head>
+#  <body>
+#   <h1>
+# Header!
+#   </h1>
+#  </body>
+# </html>
+# "#);
+# Ok::<(), std::fmt::Error>(())
+```
+
+Longer example:
 
 ```
 # use pretty_assertions::assert_eq;
