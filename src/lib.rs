@@ -7,11 +7,11 @@ Short example:
 use html_builder::*;
 use std::fmt::Write;
 
-let mut doc = Document::new();                // Contents added to buffer by each statement:
-let mut html = doc.html().attr("lang='en'");  // <html lang='en'>
+let mut buf = Buffer::new();                // Contents added to buffer by each statement:
+let mut html = buf.html().attr("lang='en'");  // <html lang='en'>
 writeln!(html.head().title(), "Title!")?;     // <head><title>Title!
 writeln!(html.body().h1(), "Header!")?;       // </title></head><body><h1>Header!
-let page = doc.build();                       // </h1></body></html>
+let page = buf.build();                       // </h1></body></html>
 # assert_eq!(page, r#"<html lang='en'>
 #  <head>
 #   <title>
@@ -35,24 +35,24 @@ Longer example:
 use html_builder::*;
 use std::fmt::Write;
 
-// Start by creating a Document.  This contains a buffer that we're going
+// Start by creating a Buffer.  This contains a buffer that we're going
 // to be writing into.
-let mut doc = Document::new();
+let mut buf = Buffer::new();
 
-// The document is writable
-writeln!(doc, "<!-- My website -->")?;
+// The buffer is writable
+writeln!(buf, "<!-- My website -->")?;
 
 // The Html5 trait provides various helper methods.  For instance, doctype()
 // simply writes the <!DOCTYPE> header
-doc.doctype();
+buf.doctype();
 
 // Most helper methods create child nodes.  You can set a node's attributes
 // like so
-let mut html = doc.html().attr("lang='en'");
+let mut html = buf.html().attr("lang='en'");
 
 let mut head = html.head();
 
-// Just like Document, nodes are also writable.  Set their contents by
+// Just like Buffer, nodes are also writable.  Set their contents by
 // writing into them.
 writeln!(head.title(), "Website!")?;
 
@@ -91,7 +91,7 @@ writeln!(footer, "Last modified")?;
 writeln!(footer.time(), "2021-04-12")?;
 
 // Finally, call build() to extract the buffer.
-let page = doc.build();
+let page = buf.build();
 
 assert_eq!(
     page,
@@ -147,9 +147,9 @@ use std::borrow::Cow;
 use std::fmt::Write;
 use std::sync::{Arc, Mutex, Weak};
 
-/// An HTML document.
+/// A buffer for writing HTML into.
 #[derive(Clone)]
-pub struct Document {
+pub struct Buffer {
     ctx: Arc<Mutex<Ctx>>,
     node: Node<'static>,
 }
@@ -179,15 +179,15 @@ struct Ctx {
     tag_open: bool,
 }
 
-impl Document {
-    pub fn new() -> Document {
+impl Buffer {
+    pub fn new() -> Buffer {
         let ctx = Arc::new(Mutex::new(Ctx::default()));
         let node = Node {
             depth: 0,
             ctx: Arc::downgrade(&ctx),
             _phantom: std::marker::PhantomData,
         };
-        Document { node, ctx }
+        Buffer { node, ctx }
     }
 
     pub fn build(self) -> String {
@@ -198,14 +198,14 @@ impl Document {
     }
 }
 
-impl std::ops::Deref for Document {
+impl std::ops::Deref for Buffer {
     type Target = Node<'static>;
     fn deref(&self) -> &Node<'static> {
         &self.node
     }
 }
 
-impl std::ops::DerefMut for Document {
+impl std::ops::DerefMut for Buffer {
     fn deref_mut(&mut self) -> &mut Node<'static> {
         &mut self.node
     }
@@ -342,7 +342,7 @@ Lorem ipsum
 
     #[test]
     fn full() {
-        let mut root = Document::new();
+        let mut root = Buffer::new();
         let mut html = root.child("html".into());
         let mut head = html.child("head".into());
         let mut title = head.child("title".into());
@@ -354,7 +354,7 @@ Lorem ipsum
 
     #[test]
     fn elided() {
-        let mut root = Document::new();
+        let mut root = Buffer::new();
         let mut html = root.child("html".into());
         writeln!(html.child("head".into()).child("title".into()), "Foobar").unwrap();
         writeln!(html.child("body".into()), "Lorem ipsum").unwrap();
@@ -363,8 +363,8 @@ Lorem ipsum
 
     #[test]
     fn pre_post_inner() {
-        let mut doc = Document::new();
-        let mut a = doc.child("a".into());
+        let mut buf = Buffer::new();
+        let mut a = buf.child("a".into());
         writeln!(a, "a pre").unwrap();
         let mut b = a.child("b".into());
         writeln!(b, "b pre").unwrap();
@@ -374,7 +374,7 @@ Lorem ipsum
         writeln!(b, "b post").unwrap();
         writeln!(a, "a post").unwrap();
         assert_eq!(
-            doc.build(),
+            buf.build(),
             "\
 <a>
 a pre
