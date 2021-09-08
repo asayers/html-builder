@@ -4,29 +4,15 @@
 Here's a teaser of what it looks like in use:
 
 ```
-# use pretty_assertions::assert_eq;
-use html_builder::*;
-use std::fmt::Write;
-
-let mut buf = Buffer::new();                // Contents added to buffer by each statement:
+use html_builder::*;                          // Contents added to buf by each statement
+use std::fmt::Write;                          // ---------------------------------------
+                                              //
+let mut buf = Buffer::new();                  //
 let mut html = buf.html().attr("lang='en'");  // <html lang='en'>
 writeln!(html.head().title(), "Title!")?;     // <head><title>Title!
 writeln!(html.body().h1(), "Header!")?;       // </title></head><body><h1>Header!
-let page = buf.finish();                       // </h1></body></html>
-# assert_eq!(page, r#"<html lang='en'>
-#  <head>
-#   <title>
-# Title!
-#   </title>
-#  </head>
-#  <body>
-#   <h1>
-# Header!
-#   </h1>
-#  </body>
-# </html>
-# "#);
-# Ok::<(), std::fmt::Error>(())
+buf.finish()                                  // </h1></body></html>
+# ; Ok::<(), std::fmt::Error>(())
 ```
 
 ## Longer example
