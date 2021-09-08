@@ -64,7 +64,7 @@ writeln!(body.h1(), "It's a website!")?;
 
 // Generating HTML in a loop
 let mut list = body.ul();
-for i in 0..2 {
+for i in 1..=3 {
     writeln!(
         list.li().a().attr(
             &format!("href='/page_{}.html'", i)
@@ -98,38 +98,22 @@ buf.finish()
 <!DOCTYPE>
 <html lang='en'>
  <head>
-  <title>
-Website!
-  </title>
+  <title>Website!</title>
   <meta charset='utf-8'>
  </head>
  <body>
-  <h1>
-It's a website!
-  </h1>
+  <h1>It's a website!</h1>
   <ul>
-   <li>
-    <a href='/page_0.html'>
-Page 0
-    </a>
-   </li>
-   <li>
-    <a href='/page_1.html'>
-Page 1
-    </a>
-   </li>
+   <li><a href='/page_1.html'>Page 1</a></li>
+   <li><a href='/page_2.html'>Page 2</a></li>
+   <li><a href='/page_3.html'>Page 3</a></li>
   </ul>
   <figure>
    <img src='img.jpg' alt='Awesome image'>
-   <figcaption>
-Awesome image
-   </figcaption>
+   <figcaption>Awesome image</figcaption>
   </figure>
   <footer>
-Last modified
-   <time>
-2021-04-12
-   </time>
+   Last modified <time>2021-04-12</time>
   </footer>
  </body>
 </html>
