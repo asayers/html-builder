@@ -148,14 +148,12 @@ use std::fmt::Write;
 use std::sync::{Arc, Mutex, Weak};
 
 /// A buffer for writing HTML into.
-#[derive(Clone)]
 pub struct Buffer {
     ctx: Arc<Mutex<Ctx>>,
     node: Node<'static>,
 }
 
 /// An HTML element.
-#[derive(Clone)]
 pub struct Node<'a> {
     depth: usize,
     ctx: Weak<Mutex<Ctx>>,
@@ -166,7 +164,6 @@ pub struct Node<'a> {
 ///
 /// Void elements can't have any contents (since there's no end tag, no
 /// content can be put between the start tag and the end tag).
-#[derive(Clone)]
 pub struct Void<'a> {
     ctx: Weak<Mutex<Ctx>>,
     _phantom: std::marker::PhantomData<&'a ()>,
