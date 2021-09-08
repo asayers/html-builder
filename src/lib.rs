@@ -1,6 +1,7 @@
 /*!
+[`Buffer`] is a magic text buffer that makes writing HTML pleasant.
 
-Short example:
+Here's a teaser of what it looks like in use:
 
 ```
 # use pretty_assertions::assert_eq;
@@ -28,7 +29,7 @@ let page = buf.finish();                       // </h1></body></html>
 # Ok::<(), std::fmt::Error>(())
 ```
 
-Longer example:
+## Longer example
 
 ```
 use html_builder::*;
