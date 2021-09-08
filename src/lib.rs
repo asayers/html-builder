@@ -180,10 +180,12 @@ struct Ctx {
 }
 
 impl Buffer {
+    /// Creates a new empty buffer.
     pub fn new() -> Buffer {
         Buffer::default()
     }
 
+    /// Closes all open tags and returns the buffer's contents.
     pub fn finish(self) -> String {
         let mutex = Arc::try_unwrap(self.ctx).ok().unwrap();
         let mut ctx = mutex.into_inner().unwrap();
