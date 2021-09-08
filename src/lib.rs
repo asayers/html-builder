@@ -181,13 +181,7 @@ struct Ctx {
 
 impl Buffer {
     pub fn new() -> Buffer {
-        let ctx = Arc::new(Mutex::new(Ctx::default()));
-        let node = Node {
-            depth: 0,
-            ctx: Arc::downgrade(&ctx),
-            _phantom: std::marker::PhantomData,
-        };
-        Buffer { node, ctx }
+        Buffer::default()
     }
 
     pub fn finish(self) -> String {
@@ -195,6 +189,18 @@ impl Buffer {
         let mut ctx = mutex.into_inner().unwrap();
         ctx.close_deeper_than(0);
         ctx.wtr
+    }
+}
+
+impl Default for Buffer {
+    fn default() -> Buffer {
+        let ctx = Arc::new(Mutex::new(Ctx::default()));
+        let node = Node {
+            depth: 0,
+            ctx: Arc::downgrade(&ctx),
+            _phantom: std::marker::PhantomData,
+        };
+        Buffer { node, ctx }
     }
 }
 
