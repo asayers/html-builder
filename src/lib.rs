@@ -11,7 +11,7 @@ let mut buf = Buffer::new();                // Contents added to buffer by each 
 let mut html = buf.html().attr("lang='en'");  // <html lang='en'>
 writeln!(html.head().title(), "Title!")?;     // <head><title>Title!
 writeln!(html.body().h1(), "Header!")?;       // </title></head><body><h1>Header!
-let page = buf.build();                       // </h1></body></html>
+let page = buf.finish();                       // </h1></body></html>
 # assert_eq!(page, r#"<html lang='en'>
 #  <head>
 #   <title>
@@ -90,8 +90,8 @@ let mut footer = body.footer();
 writeln!(footer, "Last modified")?;
 writeln!(footer.time(), "2021-04-12")?;
 
-// Finally, call build() to extract the buffer.
-let page = buf.build();
+// Finally, call finish() to extract the buffer.
+let page = buf.finish();
 
 assert_eq!(
     page,
@@ -190,7 +190,7 @@ impl Buffer {
         Buffer { node, ctx }
     }
 
-    pub fn build(self) -> String {
+    pub fn finish(self) -> String {
         let mutex = Arc::try_unwrap(self.ctx).ok().unwrap();
         let mut ctx = mutex.into_inner().unwrap();
         ctx.close_deeper_than(0);
@@ -349,7 +349,7 @@ Lorem ipsum
         writeln!(title, "Foobar").unwrap();
         let mut body = html.child("body".into());
         writeln!(body, "Lorem ipsum").unwrap();
-        assert_eq!(&root.build(), EXPECTED);
+        assert_eq!(&root.finish(), EXPECTED);
     }
 
     #[test]
@@ -358,7 +358,7 @@ Lorem ipsum
         let mut html = root.child("html".into());
         writeln!(html.child("head".into()).child("title".into()), "Foobar").unwrap();
         writeln!(html.child("body".into()), "Lorem ipsum").unwrap();
-        assert_eq!(&root.build(), EXPECTED);
+        assert_eq!(&root.finish(), EXPECTED);
     }
 
     #[test]
@@ -374,7 +374,7 @@ Lorem ipsum
         writeln!(b, "b post").unwrap();
         writeln!(a, "a post").unwrap();
         assert_eq!(
-            buf.build(),
+            buf.finish(),
             "\
 <a>
 a pre
