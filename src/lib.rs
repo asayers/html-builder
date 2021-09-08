@@ -31,7 +31,6 @@ let page = buf.finish();                       // </h1></body></html>
 Longer example:
 
 ```
-# use pretty_assertions::assert_eq;
 use html_builder::*;
 use std::fmt::Write;
 
@@ -91,11 +90,11 @@ writeln!(footer, "Last modified")?;
 writeln!(footer.time(), "2021-04-12")?;
 
 // Finally, call finish() to extract the buffer.
-let page = buf.finish();
-
-assert_eq!(
-    page,
-    r#"<!-- My website -->
+buf.finish()
+# ; Ok::<(), std::fmt::Error>(())
+```
+```html
+<!-- My website -->
 <!DOCTYPE>
 <html lang='en'>
  <head>
@@ -134,8 +133,6 @@ Last modified
   </footer>
  </body>
 </html>
-"#);
-# Ok::<(), std::fmt::Error>(())
 ```
 
 */
