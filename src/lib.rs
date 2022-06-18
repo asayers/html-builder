@@ -29,7 +29,7 @@ let mut buf = Buffer::new();
 writeln!(buf, "<!-- My website -->")?;
 
 // The Html5 trait provides various helper methods.  For instance, doctype()
-// simply writes the <!DOCTYPE> header
+// simply writes the <!DOCTYPE html> header
 buf.doctype();
 
 // Most helper methods create child nodes.  You can set a node's attributes
@@ -82,7 +82,7 @@ buf.finish()
 ```
 ```html
 <!-- My website -->
-<!DOCTYPE>
+<!DOCTYPE html>
 <html lang='en'>
  <head>
   <title>Website!</title>
