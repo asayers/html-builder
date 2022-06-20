@@ -3,11 +3,11 @@
 This crate helps you generate HTML.
 
 ```rust
-let mut doc = Document::new();                // Contents added to buffer by each statement:
-let mut html = doc.html().attr("lang='en'");  // <html lang='en'>
+let mut buf = Buffer::new();                  // Contents added to buffer by each statement:
+let mut html = buf.html().attr("lang='en'");  // <html lang='en'>
 writeln!(html.head().title(), "Title!")?;     // <head><title>Title!
 writeln!(html.body().h1(), "Header!")?;       // </title></head><body><h1>Header!
-doc.build();                                  // </h1></body></html>
+buf.finish();                                 // </h1></body></html>
 ```
 
 * It automatically closes your tags for you.  This makes code nicer to write,
