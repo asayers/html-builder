@@ -341,7 +341,7 @@ pub trait Html5 {
 impl<'a> Html5 for Node<'a> {
     /// Defines the document type
     fn doctype<'b>(&'b mut self) {
-        write!(self, "<!DOCTYPE html>\n").unwrap();
+        writeln!(self, "<!DOCTYPE html>").unwrap();
     }
 
     /// Defines a hyperlink
