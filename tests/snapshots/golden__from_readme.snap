@@ -3,7 +3,6 @@ source: tests/golden.rs
 expression: buf.finish()
 ---
 <!DOCTYPE html>
-<!-- My website -->
 <html lang='en'>
  <head>
   <title>
@@ -44,6 +43,7 @@ Last modified
 2021-04-12
    </time>
   </footer>
+  <!-- Thanks for reading -->
  </body>
 </html>
 

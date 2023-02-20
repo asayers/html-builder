@@ -22,7 +22,6 @@ fn comment() -> std::fmt::Result {
 fn from_readme() -> std::fmt::Result {
     let mut buf = Buffer::new();
     buf.doctype();
-    writeln!(buf, "<!-- My website -->")?;
     let mut html = buf.html().attr("lang='en'");
     let mut head = html.head();
     writeln!(head.title(), "Website!")?;
@@ -48,6 +47,7 @@ fn from_readme() -> std::fmt::Result {
     let mut footer = body.footer();
     writeln!(footer, "Last modified")?;
     writeln!(footer.time(), "2021-04-12")?;
+    write!(body.comment(), "Thanks for reading")?;
     insta::assert_snapshot!(buf.finish());
     Ok(())
 }

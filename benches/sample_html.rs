@@ -8,7 +8,6 @@ pub fn benchmark(c: &mut Criterion) {
 
 fn sample_html() -> Result<String, Box<dyn std::error::Error>> {
     let mut buf = Buffer::new();
-    writeln!(buf, "<!-- My website -->")?;
     buf.doctype();
     let mut html = buf.html().attr("lang='en'");
     let mut head = html.head();
@@ -35,6 +34,7 @@ fn sample_html() -> Result<String, Box<dyn std::error::Error>> {
     let mut footer = body.footer();
     writeln!(footer, "Last modified")?;
     writeln!(footer.time(), "2021-04-12")?;
+    writeln!(body.comment(), "Thanks for reading")?;
     let page = buf.finish();
     Ok(page)
 }

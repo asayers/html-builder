@@ -21,12 +21,9 @@ buf.finish()                                  // </h1></body></html>
 use html_builder::*;
 use std::fmt::Write;
 
-// Start by creating a Buffer.  This contains a buffer that we're going
+// Start by creating a Buffer.  This contains a text buffer that we're going
 // to be writing into.
 let mut buf = Buffer::new();
-
-// The buffer is writable
-writeln!(buf, "<!-- My website -->")?;
 
 // The Html5 trait provides various helper methods.  For instance, doctype()
 // simply writes the <!DOCTYPE html> header
@@ -76,12 +73,14 @@ let mut footer = body.footer();
 writeln!(footer, "Last modified")?;
 writeln!(footer.time(), "2021-04-12")?;
 
+// We also provide a kind of pseudo-node for writing comments
+write!(body.comment(), "Thanks for reading")?;
+
 // Finally, call finish() to extract the buffer.
 buf.finish()
 # ; Ok::<(), std::fmt::Error>(())
 ```
 ```html
-<!-- My website -->
 <!DOCTYPE html>
 <html lang='en'>
  <head>
@@ -102,6 +101,7 @@ buf.finish()
   <footer>
    Last modified <time>2021-04-12</time>
   </footer>
+  <!-- Thanks for reading -->
  </body>
 </html>
 ```
