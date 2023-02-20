@@ -21,8 +21,22 @@ fn comment() -> std::fmt::Result {
 #[test]
 fn escaped() -> std::fmt::Result {
     let mut buf = Buffer::new();
-    writeln!(buf, "x < 4")?;
-    writeln!(buf, "Salt & pepper")?;
+
+    let mut raw = buf.child("raw".into()).raw();
+    writeln!(raw, "(x / 2) < 4")?;
+    writeln!(raw, "Salt & pepper")?;
+    writeln!(raw, "The \"truth\" about 'html'")?;
+
+    let mut normal = buf.child("normal".into());
+    writeln!(normal, "(x / 2) < 4")?;
+    writeln!(normal, "Salt & pepper")?;
+    writeln!(normal, "The \"truth\" about 'html'")?;
+
+    let mut safe = buf.child("safe".into()).safe();
+    writeln!(safe, "(x / 2) < 4")?;
+    writeln!(safe, "Salt & pepper")?;
+    writeln!(safe, "The \"truth\" about 'html'")?;
+
     insta::assert_snapshot!(buf.finish());
     Ok(())
 }

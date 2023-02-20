@@ -2,6 +2,19 @@
 source: tests/golden.rs
 expression: buf.finish()
 ---
-x &lt; 4
+<raw>
+(x / 2) < 4
+Salt & pepper
+The "truth" about 'html'
+</raw>
+<normal>
+(x / 2) &lt; 4
 Salt &amp; pepper
+The "truth" about 'html'
+</normal>
+<safe>
+(x &#x2F; 2) &lt; 4
+Salt &amp; pepper
+The &quot;truth&quot; about &#x27;html&#x27;
+</safe>
 
