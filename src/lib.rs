@@ -137,6 +137,12 @@ pub struct Void<'a> {
     _phantom: std::marker::PhantomData<&'a ()>,
 }
 
+/// A comment.
+pub struct Comment<'a> {
+    ctx: Weak<Mutex<Ctx>>,
+    _phantom: std::marker::PhantomData<&'a ()>,
+}
+
 #[derive(Default)]
 struct Ctx {
     wtr: String,
@@ -206,6 +212,12 @@ impl Ctx {
         write!(self.wtr, "{:>w$}{}", "<", tag, w = depth + 1).unwrap();
         self.tag_open = Some(">\n");
     }
+
+    fn open_comment(&mut self, depth: usize) {
+        self.close_deeper_than(depth);
+        write!(self.wtr, "{:>w$}!-- ", "<", w = depth + 1).unwrap();
+        self.tag_open = Some(" -->\n");
+    }
 }
 
 impl<'a> Node<'a> {
@@ -226,6 +238,16 @@ impl<'a> Node<'a> {
         let mut ctx = ctx.lock().unwrap();
         ctx.open(&tag, self.depth);
         Void {
+            ctx: self.ctx.clone(),
+            _phantom: std::marker::PhantomData,
+        }
+    }
+
+    pub fn comment<'b>(&'b mut self) -> Comment<'b> {
+        let ctx = self.ctx.upgrade().unwrap();
+        let mut ctx = ctx.lock().unwrap();
+        ctx.open_comment(self.depth);
+        Comment {
             ctx: self.ctx.clone(),
             _phantom: std::marker::PhantomData,
         }
@@ -270,5 +292,23 @@ impl<'a> Void<'a> {
             write!(ctx.wtr, " {}", attr).unwrap();
         }
         self
+    }
+}
+
+impl<'a> Write for Comment<'a> {
+    fn write_char(&mut self, c: char) -> std::fmt::Result {
+        let mutex = self.ctx.upgrade().unwrap();
+        let mut ctx = mutex.lock().unwrap();
+        ctx.wtr.write_char(c)
+    }
+    fn write_fmt(&mut self, args: std::fmt::Arguments<'_>) -> std::fmt::Result {
+        let mutex = self.ctx.upgrade().unwrap();
+        let mut ctx = mutex.lock().unwrap();
+        ctx.wtr.write_fmt(args)
+    }
+    fn write_str(&mut self, s: &str) -> std::fmt::Result {
+        let mutex = self.ctx.upgrade().unwrap();
+        let mut ctx = mutex.lock().unwrap();
+        ctx.wtr.write_str(s)
     }
 }
