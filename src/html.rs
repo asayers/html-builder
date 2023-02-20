@@ -1,6 +1,5 @@
 use crate::{Node, Void};
 use std::borrow::Cow;
-use std::fmt::Write;
 
 /// Helper methods for generating HTML5 documents.
 pub trait Html5 {
@@ -341,7 +340,7 @@ pub trait Html5 {
 impl<'a> Html5 for Node<'a> {
     /// Defines the document type
     fn doctype(&mut self) {
-        writeln!(self, "<!DOCTYPE html>").unwrap();
+        self.void_child(Cow::Borrowed("!DOCTYPE")).attr("html");
     }
 
     /// Defines a hyperlink
