@@ -125,7 +125,14 @@ pub struct Buffer {
 pub struct Node<'a> {
     depth: usize,
     ctx: Weak<Mutex<Ctx>>,
+    escaping: Escaping,
     _phantom: std::marker::PhantomData<&'a ()>,
+}
+
+enum Escaping {
+    Raw,
+    Normal,
+    Safe,
 }
 
 /// A self-closing element.
@@ -171,6 +178,7 @@ impl Default for Buffer {
         let node = Node {
             depth: 0,
             ctx: Arc::downgrade(&ctx),
+            escaping: Escaping::Normal,
             _phantom: std::marker::PhantomData,
         };
         Buffer { node, ctx }
@@ -229,6 +237,7 @@ impl<'a> Node<'a> {
         Node {
             depth: self.depth + 1,
             ctx: self.ctx.clone(),
+            escaping: Escaping::Normal,
             _phantom: std::marker::PhantomData,
         }
     }
@@ -261,6 +270,16 @@ impl<'a> Node<'a> {
         }
         self
     }
+
+    pub fn raw(mut self) -> Node<'a> {
+        self.escaping = Escaping::Raw;
+        self
+    }
+
+    pub fn safe(mut self) -> Node<'a> {
+        self.escaping = Escaping::Safe;
+        self
+    }
 }
 
 impl<'a> Write for Node<'a> {
@@ -268,8 +287,12 @@ impl<'a> Write for Node<'a> {
         let mutex = self.ctx.upgrade().unwrap();
         let mut ctx = mutex.lock().unwrap();
         ctx.close_deeper_than(self.depth);
-        let s = html_escape::encode_text(s);
-        ctx.wtr.write_str(s)
+        let s = match self.escaping {
+            Escaping::Raw => s.into(),
+            Escaping::Normal => html_escape::encode_text(s),
+            Escaping::Safe => html_escape::encode_safe(s),
+        };
+        ctx.wtr.write_str(&s)
     }
 }
 
