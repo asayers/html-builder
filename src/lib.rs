@@ -122,6 +122,10 @@ pub struct Buffer {
 }
 
 /// An HTML element.
+///
+/// By default, the following characters are escaped: `&`, `<`, and `>`.
+/// The escaping can be strengthened or weakened using the the [`raw()`]
+/// and [`safe()`] methods.
 pub struct Node<'a> {
     depth: usize,
     ctx: Weak<Mutex<Ctx>>,
@@ -145,6 +149,8 @@ pub struct Void<'a> {
 }
 
 /// A comment.
+///
+/// No escaping is performed on the contents.
 pub struct Comment<'a> {
     ctx: Weak<Mutex<Ctx>>,
     _phantom: std::marker::PhantomData<&'a ()>,
@@ -271,11 +277,18 @@ impl<'a> Node<'a> {
         self
     }
 
+    /// Disable escaping
+    ///
+    /// In this mode, written text is passed through unmodified.
     pub fn raw(mut self) -> Node<'a> {
         self.escaping = Escaping::Raw;
         self
     }
 
+    /// Escape more special characters
+    ///
+    /// In this mode, the following characters are escaped: `&`, `<`, `>`,
+    /// `"`, `'`, and `/`.
     pub fn safe(mut self) -> Node<'a> {
         self.escaping = Escaping::Safe;
         self
