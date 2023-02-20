@@ -2,6 +2,23 @@ use html_builder::*;
 use std::fmt::Write;
 
 #[test]
+fn comment() -> std::fmt::Result {
+    let mut buf = Buffer::new();
+    let mut node = buf.child("node 1".into());
+    let mut comment = node.comment();
+    write!(comment, "comment 1A")?;
+    let mut comment = node.comment();
+    write!(comment, "comment 1B")?;
+    let mut node = node.child("node 2".into());
+    let mut comment = node.comment();
+    write!(comment, "comment 2")?;
+    let mut comment = buf.comment();
+    write!(comment, "comment 3")?;
+    insta::assert_snapshot!(buf.finish());
+    Ok(())
+}
+
+#[test]
 fn from_readme() -> std::fmt::Result {
     let mut buf = Buffer::new();
     buf.doctype();

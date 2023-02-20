@@ -1,0 +1,13 @@
+---
+source: tests/golden.rs
+expression: buf.finish()
+---
+<node 1>
+ <!-- comment 1A -->
+ <!-- comment 1B -->
+ <node 2>
+  <!-- comment 2 -->
+ </node 2>
+</node 1>
+<!-- comment 3 -->
+
