@@ -1,0 +1,7 @@
+---
+source: tests/golden.rs
+expression: buf.finish()
+---
+x &lt; 4
+Salt &amp; pepper
+

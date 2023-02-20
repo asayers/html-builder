@@ -19,6 +19,15 @@ fn comment() -> std::fmt::Result {
 }
 
 #[test]
+fn escaped() -> std::fmt::Result {
+    let mut buf = Buffer::new();
+    writeln!(buf, "x < 4")?;
+    writeln!(buf, "Salt & pepper")?;
+    insta::assert_snapshot!(buf.finish());
+    Ok(())
+}
+
+#[test]
 fn from_readme() -> std::fmt::Result {
     let mut buf = Buffer::new();
     buf.doctype();
