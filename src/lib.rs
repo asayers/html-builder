@@ -264,22 +264,11 @@ impl<'a> Node<'a> {
 }
 
 impl<'a> Write for Node<'a> {
-    fn write_char(&mut self, c: char) -> std::fmt::Result {
-        let mutex = self.ctx.upgrade().unwrap();
-        let mut ctx = mutex.lock().unwrap();
-        ctx.close_deeper_than(self.depth);
-        ctx.wtr.write_char(c)
-    }
-    fn write_fmt(&mut self, args: std::fmt::Arguments<'_>) -> std::fmt::Result {
-        let mutex = self.ctx.upgrade().unwrap();
-        let mut ctx = mutex.lock().unwrap();
-        ctx.close_deeper_than(self.depth);
-        ctx.wtr.write_fmt(args)
-    }
     fn write_str(&mut self, s: &str) -> std::fmt::Result {
         let mutex = self.ctx.upgrade().unwrap();
         let mut ctx = mutex.lock().unwrap();
         ctx.close_deeper_than(self.depth);
+        let s = html_escape::encode_text(s);
         ctx.wtr.write_str(s)
     }
 }

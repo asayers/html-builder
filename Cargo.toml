@@ -12,6 +12,9 @@ repository = "https://github.com/asayers/html-builder"
 name = 'sample_html'
 harness = false
 
+[dependencies]
+html-escape = "0.2.13"
+
 [dev-dependencies]
 criterion = "0.3.5"
 insta = "1.28.0"
