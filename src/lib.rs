@@ -141,7 +141,7 @@ pub struct Void<'a> {
 struct Ctx {
     wtr: String,
     stack: Vec<Cow<'static, str>>,
-    tag_open: bool,
+    tag_open: Option<&'static str>,
 }
 
 impl Buffer {
@@ -186,9 +186,8 @@ impl std::ops::DerefMut for Buffer {
 
 impl Ctx {
     fn close_unclosed(&mut self) {
-        if self.tag_open {
-            self.tag_open = false;
-            self.wtr.write_str(">\n").unwrap();
+        if let Some(closer) = self.tag_open.take() {
+            self.wtr.write_str(closer).unwrap();
         }
     }
 
@@ -205,7 +204,7 @@ impl Ctx {
     fn open(&mut self, tag: &str, depth: usize) {
         self.close_deeper_than(depth);
         write!(self.wtr, "{:>w$}{}", "<", tag, w = depth + 1).unwrap();
-        self.tag_open = true;
+        self.tag_open = Some(">\n");
     }
 }
 
@@ -235,7 +234,7 @@ impl<'a> Node<'a> {
     pub fn attr(self, attr: &str) -> Node<'a> {
         let ctx = self.ctx.upgrade().unwrap();
         let mut ctx = ctx.lock().unwrap();
-        if ctx.tag_open {
+        if ctx.tag_open.is_some() {
             write!(ctx.wtr, " {}", attr).unwrap();
         }
         self
@@ -267,7 +266,7 @@ impl<'a> Void<'a> {
     pub fn attr(self, attr: &str) -> Void<'a> {
         let ctx = self.ctx.upgrade().unwrap();
         let mut ctx = ctx.lock().unwrap();
-        if ctx.tag_open {
+        if ctx.tag_open.is_some() {
             write!(ctx.wtr, " {}", attr).unwrap();
         }
         self
