@@ -1,0 +1,15 @@
+---
+source: tests/golden.rs
+expression: root.finish()
+---
+<html>
+ <head>
+  <title>
+Foobar
+  </title>
+ </head>
+ <body>
+Lorem ipsum
+ </body>
+</html>
+

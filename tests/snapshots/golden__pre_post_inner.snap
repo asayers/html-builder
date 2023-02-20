@@ -1,0 +1,17 @@
+---
+source: tests/golden.rs
+expression: buf.finish()
+---
+<a>
+a pre
+ <b>
+b pre
+  <c>
+c pre
+c post
+  </c>
+b post
+ </b>
+a post
+</a>
+
