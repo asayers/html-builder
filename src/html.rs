@@ -63,7 +63,7 @@ pub trait Html5 {
     /// Defines a piece of computer code
     fn code(&mut self) -> Node;
 
-    /// Specifies column properties for each column within a <colgroup> element
+    /// Specifies column properties for each column within a `<colgroup>` element
     fn col(&mut self) -> Void;
 
     /// Specifies a group of one or more columns in a table for formatting
@@ -438,7 +438,7 @@ impl<'a> Html5 for Node<'a> {
         self.child(Cow::Borrowed("code"))
     }
 
-    /// Specifies column properties for each column within a <colgroup> element
+    /// Specifies column properties for each column within a `<colgroup>` element
     fn col(&mut self) -> Void {
         self.void_child(Cow::Borrowed("col"))
     }
@@ -513,7 +513,7 @@ impl<'a> Html5 for Node<'a> {
         self.child(Cow::Borrowed("fieldset"))
     }
 
-    /// Defines a caption for a <figure> element
+    /// Defines a caption for a `<figure>` element
     fn figcaption(&mut self) -> Node {
         self.child(Cow::Borrowed("figcaption"))
     }
@@ -613,12 +613,12 @@ impl<'a> Html5 for Node<'a> {
         self.child(Cow::Borrowed("kbd"))
     }
 
-    /// Defines a label for an <input> element
+    /// Defines a label for an `<input>` element
     fn label(&mut self) -> Node {
         self.child(Cow::Borrowed("label"))
     }
 
-    /// Defines a caption for a <fieldset> element
+    /// Defines a caption for a `<fieldset>` element
     fn legend(&mut self) -> Node {
         self.child(Cow::Borrowed("legend"))
     }
@@ -768,7 +768,7 @@ impl<'a> Html5 for Node<'a> {
         self.child(Cow::Borrowed("small"))
     }
 
-    /// Defines multiple media resources for media elements (<video> and <audio>)
+    /// Defines multiple media resources for media elements (`<video>` and `<audio>`)
     fn source(&mut self) -> Void {
         self.void_child(Cow::Borrowed("source"))
     }
@@ -793,7 +793,7 @@ impl<'a> Html5 for Node<'a> {
         self.child(Cow::Borrowed("sub"))
     }
 
-    /// Defines a visible heading for a <details> element
+    /// Defines a visible heading for a `<details>` element
     fn summary(&mut self) -> Node {
         self.child(Cow::Borrowed("summary"))
     }
@@ -863,7 +863,7 @@ impl<'a> Html5 for Node<'a> {
         self.child(Cow::Borrowed("tr"))
     }
 
-    /// Defines text tracks for media elements (<video> and <audio>)
+    /// Defines text tracks for media elements (`<video>` and `<audio>`)
     fn track(&mut self) -> Void {
         self.void_child(Cow::Borrowed("track"))
     }
