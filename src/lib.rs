@@ -123,9 +123,19 @@ pub struct Buffer {
 
 /// An HTML element.
 ///
-/// By default, the following characters are escaped: `&`, `<`, and `>`.
-/// The escaping can be strengthened or weakened using the the [`raw()`]
-/// and [`safe()`] methods.
+/// An open-tag is written to the buffer when a `Node` is created, and a
+/// close-tag is written when the `Node` is dropped.  You can set attributes
+/// on a newly-created node using [`attr()`][Node::attr], create child nodes
+/// with [`child()`][Node::child], and write text into the node using the
+/// `Write` impl.
+///
+/// ## Escaping
+///
+/// Text written into a node using its `Write` impl is transformed to make it
+/// render correctly in an HTML-context.  By default, the following characters
+/// are escaped: `&`, `<`, and `>`.  The escaping can be strengthened or
+/// weakened using the [`safe()`][Node::safe] and [`raw()`][Node::raw]
+/// methods respectively.
 pub struct Node<'a> {
     depth: usize,
     ctx: Weak<Mutex<Ctx>>,
